@@ -1,1 +1,77 @@
-// completar
+import packs.*
+import coordinadores.*
+describe "test valor Final" {
+    const coor1 = new Coordinador(cantidadDeViajes = 21, estaMotivado = true, añosDeExperiencia = 2, rol = guia)
+    const pack1 = new PackNacional(duracionDias = 2, precioBase = 100, coordinador = coor1, provincia = "Buenos Aires")
+    const pack2 = new PackInternacional(duracionDias = 2, precioBase = 100, coordinador = coor1, pais = "España", cantEscalas = 2, esLugarDeInteres = true)
+  test "Un pack nacional sin beneficios vigentes devuelve el mismo precio base." {
+    assert.equals(pack1.precioBase(), pack1.valorFinal())
+  }
+  test "Un pack nacional con 2 beneficios vigentes suma correctamente sus costos al precio base." {
+    const ben1 = new Beneficio(tipo = "Traslados privados",costo = 50, estaVigente = true)
+    const ben2 = new Beneficio(tipo = "Acceso a salas VIP",costo = 50, estaVigente = true)
+    pack1.agregarBeneficio(ben1)
+    pack1.agregarBeneficio(ben2)
+    assert.equals(200, pack1.valorFinal())
+  }
+  test "Un pack internacional sin beneficios vigentes calcula correctamente el total con el 20% de recargo." {
+    assert.equals(120, pack2.valorFinal())
+  }
+}
+
+describe "test coordinadores altamente calificados" {
+    
+  test "Un guía motivado con 21 viajes realizados es considerado altamente calificado." {
+    const coorGuia = new Coordinador(cantidadDeViajes = 21, estaMotivado = true, añosDeExperiencia = 2, rol = guia)
+    assert.that(coorGuia.esAltamenteCalificado())
+  }
+  test "Un asistente logístico con menos de 3 años de experiencia no es calificado, aunque tenga muchos viajes." {
+    const coorLog = new Coordinador(cantidadDeViajes = 21, estaMotivado = true, añosDeExperiencia = 2, rol = asistenteLogico)
+    assert.notThat(coorLog.esAltamenteCalificado())
+  }
+  test "Un acompañante con cualquier cantidad de viajes es siempre calificado si supera los 20." {
+    const coorAcom = new Coordinador(cantidadDeViajes = 21, estaMotivado = true, añosDeExperiencia = 2, rol = acompañante)
+    assert.that(coorAcom.esAltamenteCalificado())
+  }
+}
+
+describe "Tests Packs Premiums" {
+  test "El mismo Pack nacional del primer describe con coordinador guia altamente calificado no seria premium por su baja duracion en dias" {
+    const coorGuia = new Coordinador(cantidadDeViajes = 21, estaMotivado = true, añosDeExperiencia = 2, rol = guia)
+    const pack1 = new PackNacional(duracionDias = 2, precioBase = 100, coordinador = coorGuia, provincia = "Buenos Aires")
+    assert.notThat(pack1.esPremium())
+  }
+
+  test "El mismo Pack internacional del primer describe con coordinador guia altamente calificado seria premium" {
+    const coorGuia = new Coordinador(cantidadDeViajes = 22, estaMotivado = true, añosDeExperiencia = 2, rol = guia)
+     const pack2 = new PackInternacional(duracionDias = 21, precioBase = 100, coordinador = coorGuia, pais = "España", cantEscalas = 0, esLugarDeInteres = true)
+    assert.that(pack2.esPremium())
+  }
+}
+
+describe "Tests Packs provinciales" {
+  test "Un pack provincial sin beneficios pero que cumple el resto de condiciones no es premium" {
+    const coorGuia = new Coordinador(cantidadDeViajes = 21, estaMotivado = true, añosDeExperiencia = 2, rol = guia)
+    const pack1 = new PackProvinciales(duracionDias = 2, precioBase = 100, coordinador = coorGuia, provincia = "Buenos Aires", cantCiudadesAVisitar = 5)
+    pack1.agregarActividad("Surf")
+    pack1.agregarActividad("Snowboard")
+    pack1.agregarActividad("Futbol")
+    pack1.agregarActividad("Ir a la cancha")
+    assert.notThat(pack1.esPremium())
+  }
+  test "un Pack provincial es premium" {
+    const coor1 = new Coordinador(cantidadDeViajes = 21, estaMotivado = true, añosDeExperiencia = 2, rol = guia)
+    const pack1 = new PackProvinciales(duracionDias = 14, precioBase = 100, coordinador = coor1, provincia = "Buenos Aires", cantCiudadesAVisitar = 6)
+    const ben1 = new Beneficio(tipo = "traslados Privados", costo = 50, estaVigente = true)
+    const ben2 = new Beneficio(tipo = "Acceso a salas VIP",costo = 50, estaVigente = true)
+    const ben3 = new Beneficio(tipo = "Acceso a salas VIP",costo = 50, estaVigente = true)
+    pack1.agregarActividad("montaña")
+    pack1.agregarActividad("bote")
+    pack1.agregarActividad("caminata")
+    pack1.agregarActividad("tennis")
+    pack1.agregarBeneficio(ben1)
+    pack1.agregarBeneficio(ben2)
+    pack1.agregarBeneficio(ben3)
+    assert.that(pack1.esPremium())
+  }
+}
